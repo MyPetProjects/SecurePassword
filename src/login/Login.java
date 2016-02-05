@@ -15,36 +15,61 @@ import javax.crypto.spec.PBEKeySpec;
 
 import dao.Storage;
 
+/**
+ * Login is used to register new users and to authenticate existing ones
+ * using {@link dao.Storage} provided at creation time
+ * 
+ * @author Valentine
+ */
 public class Login {
+    /** number of iterations used in password-based encryption(PBE) */
     private static final int ITERATIONS = 1000;
+    /** key length in password-based encryption(PBE) */
     private static final int KEY_LENGTH = 160;
+    /**  Random Number Generator (RNG) algorithm used in salt generation */
+    private static final String SALT_ALGORITHM = "SHA1PRNG";
+    /** salt length (in bytes) */
     private static final int SALT_SIZE = 8;
-    private static final String ALGORITHM = "PBKDF2WithHmacSHA1";
+    /** secret-key algorithm used in password encryption */
+    private static final String KEY_ALGORITHM = "PBKDF2WithHmacSHA1";
     private final Storage storage;
 
+    /**
+     * @param storage storage with login information
+     */
     public Login(Storage storage) {
         this.storage = storage;
     };
     
-    private static byte[] generateSalt() throws Exception {
-        try {
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            byte[] salt = new byte[SALT_SIZE];
-            random.nextBytes(salt);
-            return salt;
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            throw new Exception("Internal error occured in encrypting module!" +
-                        "Salt generating failed!");
-        }
+    /**
+     * generates random number(salt) for further password encryption
+     * 
+     * @return unique randomly generated salt in form of array of bytes
+     * @throws NoSuchAlgorithmException if incorrect algorithm
+     *         is used for salt generation
+     */
+    private static byte[] generateSalt() throws NoSuchAlgorithmException {
+        SecureRandom random = SecureRandom.getInstance(SALT_ALGORITHM);
+        byte[] salt = new byte[SALT_SIZE];
+        random.nextBytes(salt);
+        return salt;
     };
     
+    /**
+     * encrypts password using provided salt
+     * 
+     * @param  password unencrypted password
+     * @param  salt random number which increases encryption
+     *         safety(should be unique for every login)
+     * @return encrypted password
+     * @throws Exception if encryption settings are incorrect
+     */
     private static byte[] encryptPassword(String password, byte[] salt)
             throws Exception {
         KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt,
                 ITERATIONS, KEY_LENGTH);
         try {
-            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(ALGORITHM);
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(KEY_ALGORITHM);
             SecretKey secretKey = keyFactory.generateSecret(keySpec);
             return secretKey.getEncoded();
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -53,6 +78,14 @@ public class Login {
         }
     };
 
+    /**
+     * registers a new user
+     * 
+     * @param  login user login
+     * @param  password user password
+     * @return true if user registered successfully
+     *         false if some error occured
+     */
     public boolean register(String login, String password) {
         byte[] salt = new byte[SALT_SIZE];
         try {
@@ -65,6 +98,15 @@ public class Login {
         }
     }
     
+    /**
+     * checks the validity of login and password type
+     * 
+     * @param  login login of existing user
+     * @param  password password of existing user
+     * @return true if provided user login and password are correct
+     *         false if login or password are incorrect or if an error
+     *         happened during authentication 
+     */
     public boolean authenticate(String login, String password) {
         byte[] salt = storage.getSalt(login);
         try {
@@ -77,6 +119,9 @@ public class Login {
         }
     };
     
+    /**
+     * provides console interface for user authentication
+     */
     public void userInterface() {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(System.in));
@@ -113,6 +158,10 @@ public class Login {
         };        
     };
     
+    /**
+     * entry point to application
+     * @param args no command line arguments are expected
+     */
     public static void main(String[] args) {
         Login login = new Login(new Storage());
         login.userInterface();
