@@ -1,46 +1,36 @@
 package dao;
 
 /**
- * Stub class used for testing {@link login.Login} class functionality
- * when there is no real database available
+ * Interface for storing and obtaining user authenticating info:
+ * login, password and salt to/from underlying storage
  * 
  * @author Valentine
  */
-public class Storage {
-    /** stub salt value */
-    private static final byte[] SALT = "B@5e13ad".getBytes();
-    /** stub password value */
-    private static final byte[] PASSWORD = "B@e2b07b".getBytes();
-    
+public interface Storage {
     /**
-     * stub method which returns constant salt
+     * returns salt for provided login
      * 
-     * @param  login not used for salt generation
-     * @return constant salt value for testing
+     * @param  login login for which we want obtain salt
+     * @return salt value unique for every login and used for password encryption
      */
-    public byte[] getSalt(String login) {
-        return SALT;
-    };
-    
+    byte[] getSalt(String login);
+
     /**
      * returns correct hashed password for given login
      * 
      * @param login user login
-     * @return constant password for testing
+     * @return correct hashed password for given login
      */
-    public byte[] getPassword(String login) {
-        return PASSWORD;
-    };
-    
+    byte[] getPassword(String login);
+
     /**
-     * stub method which does nothing
+     * stores user login, password and salt in the storage
      * 
      * @param  login user login
      * @param  password user password
      * @param  salt user salt
-     * @return always true
+     * @return true if user info has been successfully stored
+     *         false if some error occured
      */
-    public boolean storeLogin(String login, byte[] password, byte[] salt) {
-        return true;
-    };
+    boolean storeLogin(String login, byte[] password, byte[] salt);
 }

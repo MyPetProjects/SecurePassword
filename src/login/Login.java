@@ -14,6 +14,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import dao.Storage;
+import dao.StorageStub;
 
 /**
  * Login is used to register new users and to authenticate existing ones
@@ -163,7 +164,7 @@ public class Login {
      * @param args no command line arguments are expected
      */
     public static void main(String[] args) {
-        Login login = new Login(new Storage());
+        Login login = new Login(new StorageStub());
         login.userInterface();
     };
 };
